@@ -1,9 +1,12 @@
 const express = require('express');
 const path = require('path');// for ejs
-
+const cookieparser= require('cookie-parser');
 const urlRoute = require('./routes/url');
-const staticRoute=require('./routes/staticRouter');
+const staticRoute = require('./routes/staticRouter');
+const userRoute = require('./routes/user');
+
 const { connectToMongoDB } = require('./connect');
+const { restrictToLoggedinUserOnly, checkAuth } = require("./middlewares/auth");
 const app = express();
 const PORT = 8001;
 
@@ -17,8 +20,11 @@ app.set("views",path. resolve("./views"));// for ejs
 //middleware
 app.use(express.json());  // for json 
 app.use(express.urlencoded({ extended: true })); // for form data
+app.use(cookieparser());
 
-app.use("/", staticRoute);
+app.use("/",checkAuth, staticRoute);
+app.use("/url",restrictToLoggedinUserOnly, urlRoute);
+app.use("/user", userRoute);
 
 // app.get("/test", async(req, res) => {
 //     const allUrls = await URL.find({});
@@ -46,7 +52,7 @@ app.use("/", staticRoute);
 
 // app.use("/", staticRoute); // for static files
 //post
-app.use("/url", urlRoute);
+
 
 
 //getmon
